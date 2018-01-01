@@ -1,0 +1,70 @@
+#Ultimate TNT config
+#by MrMicky
+#
+#Spigot link: https://www.spigotmc.org/resources/ultimatetnt.49388/
+
+UpdateChecker: true
+
+#TNT will not be modify in worlds below
+DisableWorlds:
+- 'DisableWorld1'
+- 'DisableWorld2'
+
+#Automatically ignite TNT on place
+AutoIgnite: false
+
+#Should TNT have a custom name
+CustomName: true
+
+#List of names within which one will be randomly selected
+#'%timer' will be replaced by the time left before the TNT explodes
+Names:
+- '&4Run: %timer'
+- '&cBoom in %timer'
+
+#Delay in ticks before TNT explodes. Minecraft default is 80 ticks (4 seconds). 1 second = 20 ticks
+ExplodeTicks: 80
+
+#Radius affected by the explosion. Minecraft default is 4.0
+Radius: 4.0
+
+#Should TNT break blocks
+DisableBreak: false
+
+#If enable blocks destroyed with the explosion will be restores
+RestoreBlocks:
+  Enable: false
+#Minimum delay before blocks restore. Delay is in ticks
+  MinDelay: 60
+#Max delay for restore all blocks from the explosion
+  MaxDelay: 140
+
+#Disable blocks drop with the explosion
+DisableDrops: false
+
+#Should the explosion will create fire
+Fire: false
+
+#Blocks in this list will not break or be modify by the explosion
+#You can find here a list of all type:
+# https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+BlacklistBlocks:
+- 'WOOL'
+
+#If whitelist is enable, only blocks in the list will be affect by the explosion
+#You can find here a list of all type:
+# https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+Whitelist:
+  Enable: false
+  BlockList:
+  - 'STONE'
+
+#Create a realistic explosion ? 'DisableBreak' need to be false
+#Blocks will not be break but will be project arround the explosion
+RealisticExplosion: false
+
+#Reduce the fall damage by dividing the damages (usefull for TNT Fly). Set to 1.0 to not reduce it
+FallDamage: 5.0
+
+#Reduce the TNT damage by dividing the damages (usefull for TNT Fly). Set to 1.0 to not reduce it
+TNTDamage: 5.0

@@ -1,0 +1,26 @@
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ
+.idea/
+
+# Maven
+build.xml
+target/
+dependency-reduced-pom.xml
+
+# Random
+build/
+bin/
+dist/
+manifest.mf
+
+*.log*
+
+# Mac
+.DS_Store/
+
+# Random stuff
+Temp_*
