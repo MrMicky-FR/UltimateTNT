@@ -27,7 +27,7 @@ public class UltimateTNT extends JavaPlugin {
 	// Reflection
 	private Method playerHandleMethod;
 	private Method tntHandleMethod;
-	private Field tntSourceField = null;
+	private Field tntSourceField;
 
 	@Override
 	public void onEnable() {
