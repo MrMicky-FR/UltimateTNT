@@ -98,8 +98,9 @@ public class TNTListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onExplode(EntityExplodeEvent e) {
 		Entity en = e.getEntity();
-		if (e.getEntityType() == EntityType.PRIMED_TNT && m.isWorldEnabled(en.getWorld())) {
-			Entity source = ((TNTPrimed) en).getSource();
+		if ((e.getEntityType() == EntityType.PRIMED_TNT || m.getConfig().getBoolean("AllExplosions"))
+				&& m.isWorldEnabled(en.getWorld())) {
+			Entity source = e.getEntityType() == EntityType.PRIMED_TNT ? ((TNTPrimed) en).getSource() : null;
 			Iterator<Block> bs = e.blockList().iterator();
 
 			boolean noBreak = m.getConfig().getBoolean("DisableBreak");
@@ -117,10 +118,9 @@ public class TNTListener implements Listener {
 			while (bs.hasNext()) {
 				Block b = bs.next();
 				if (b.getType() == Material.TNT) {
-					if (source != null && source.getType() == EntityType.PLAYER) {
-						m.spawnTNT(b, (Player) source, name);
-						bs.remove();
-					}
+					m.spawnTNT(b, source != null && source.getType() == EntityType.PLAYER ? (Player) source : null,
+							name);
+					bs.remove();
 				} else if (noBreak || m.containsIgnoreCase(blacklist, b.getType().toString())
 						|| (whitelist && !m.containsIgnoreCase(whitelists, b.getType().toString()))) {
 					bs.remove();

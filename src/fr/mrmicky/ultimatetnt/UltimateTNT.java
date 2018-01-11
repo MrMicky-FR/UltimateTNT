@@ -108,17 +108,19 @@ public class UltimateTNT extends JavaPlugin {
 			}
 		}
 
-		try {
-			if (playerHandleMethod == null) {
-				playerHandleMethod = p.getClass().getDeclaredMethod("getHandle");
-				tntHandleMethod = tnt.getClass().getDeclaredMethod("getHandle");
-				tntSourceField = tntHandleMethod.getReturnType().getDeclaredField("source");
-				tntSourceField.setAccessible(true);
+		if (p != null) {
+			try {
+				if (playerHandleMethod == null) {
+					playerHandleMethod = p.getClass().getDeclaredMethod("getHandle");
+					tntHandleMethod = tnt.getClass().getDeclaredMethod("getHandle");
+					tntSourceField = tntHandleMethod.getReturnType().getDeclaredField("source");
+					tntSourceField.setAccessible(true);
+				}
+				Object craftTNT = tntHandleMethod.invoke(tnt);
+				tntSourceField.set(craftTNT, playerHandleMethod.invoke(p));
+			} catch (ReflectiveOperationException e) {
+				e.printStackTrace();
 			}
-			Object craftTNT = tntHandleMethod.invoke(tnt);
-			tntSourceField.set(craftTNT, playerHandleMethod.invoke(p));
-		} catch (ReflectiveOperationException e) {
-			e.printStackTrace();
 		}
 	}
 

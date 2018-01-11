@@ -68,3 +68,6 @@ FallDamage: 5.0
 
 #Reduce the TNT damage by dividing the damages (usefull for TNT Fly). Set to 1.0 to not reduce it
 TNTDamage: 5.0
+
+#If enable, all explosions will be handle by the plugin (for realistic explosion or blcoks restore)
+AllExplosions: false
