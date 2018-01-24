@@ -38,6 +38,9 @@ RestoreBlocks:
   MinDelay: 60
 #Max delay for restore all blocks from the explosion
   MaxDelay: 140
+#Blocks in this list will not be restore
+  RestoreBlacklist:
+  - 'CHEST'
 
 #Disable blocks drop with the explosion
 DisableDrops: false

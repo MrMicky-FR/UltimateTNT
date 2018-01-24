@@ -139,7 +139,7 @@ public class TNTListener implements Listener {
 						}
 						b.setType(Material.AIR);
 					}
-				} else if (restore) {
+				} else if (restore && b.getType() != Material.AIR) {
 					restoreBlock(b, null);
 				}
 			}
@@ -187,7 +187,11 @@ public class TNTListener implements Listener {
 					}
 				}
 			}
-			bs.update(true);
+			
+			if (!m.containsIgnoreCase(m.getConfig().getStringList("RestoreBlocks.RestoreBlacklist"),
+					bs.getType().toString())) {
+				bs.update(true);
+			}
 		}, min + m.r.nextInt(max - min));
 	}
 
