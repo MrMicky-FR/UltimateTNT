@@ -10,7 +10,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
@@ -20,6 +22,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -27,7 +30,9 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.DirectionalContainer;
 import org.bukkit.util.Vector;
 
 public class TNTListener implements Listener {
@@ -78,6 +83,28 @@ public class TNTListener implements Listener {
 		}
 	}
 
+	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+	public void onDispense(BlockDispenseEvent e) {
+		ItemStack item = e.getItem();
+		if (item == null || item.getType() != Material.TNT || e.getBlock().getType() != Material.DISPENSER) {
+			return;
+		}
+
+		e.setCancelled(true);
+
+		Dispenser d = (Dispenser) e.getBlock().getState();
+		Inventory inv = d.getInventory();
+		BlockFace face = ((DirectionalContainer) d.getData()).getFacing();
+		Block b = e.getBlock().getRelative(face);
+
+		if (b.getType() == Material.AIR) {
+			m.spawnTNT(b, null, m.getRandomTNTName());
+			ItemStack item2 = inv.getItem(inv.first(Material.TNT));
+			item2.setAmount(item2.getAmount() - 1);
+			inv.setItem(inv.first(Material.TNT), item2);
+		}
+	}
+
 	@EventHandler
 	public void onDamage(EntityDamageEvent e) {
 		if (e.getEntityType() == EntityType.PLAYER && e.getCause() == DamageCause.FALL
@@ -98,8 +125,8 @@ public class TNTListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onExplode(EntityExplodeEvent e) {
 		Entity en = e.getEntity();
-		if ((e.getEntityType() == EntityType.PRIMED_TNT || m.getConfig().getBoolean("AllExplosions"))
-				&& m.isWorldEnabled(en.getWorld())) {
+		if ((e.getEntityType() == EntityType.PRIMED_TNT || e.getEntityType() == EntityType.MINECART_TNT
+				|| m.getConfig().getBoolean("AllExplosions")) && m.isWorldEnabled(en.getWorld())) {
 			Entity source = e.getEntityType() == EntityType.PRIMED_TNT ? ((TNTPrimed) en).getSource() : null;
 			Iterator<Block> bs = e.blockList().iterator();
 
@@ -187,7 +214,7 @@ public class TNTListener implements Listener {
 					}
 				}
 			}
-			
+
 			if (!m.containsIgnoreCase(m.getConfig().getStringList("RestoreBlocks.RestoreBlacklist"),
 					bs.getType().toString())) {
 				bs.update(true);
