@@ -76,7 +76,7 @@ public class UltimateTNT extends JavaPlugin {
 		return names.get(r.nextInt(names.size())).replace('&', '§');
 	}
 
-	public void spawnTNT(Block b, Player p, String tntName) {
+	public TNTPrimed spawnTNT(Block b, Player p, String tntName) {
 		b.setType(Material.AIR);
 		Location loc = b.getLocation().add(0.5, 0.25, 0.5);
 		TNTPrimed tnt = (TNTPrimed) b.getWorld().spawnEntity(loc, EntityType.PRIMED_TNT);
@@ -122,6 +122,7 @@ public class UltimateTNT extends JavaPlugin {
 				e.printStackTrace();
 			}
 		}
+		return tnt;
 	}
 
 	public boolean containsIgnoreCase(List<String> list, String s) {

@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -43,6 +45,8 @@ public class TNTListener implements Listener {
 	private Map<Location, Location> blocks = new HashMap<>();
 	private List<List<Block>> safeBlocks = new ArrayList<>();
 
+	private List<UUID> throwCooldown = new ArrayList<>();
+
 	public TNTListener(UltimateTNT m) {
 		this.m = m;
 	}
@@ -62,24 +66,45 @@ public class TNTListener implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onInteract(PlayerInteractEvent e) {
-		if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
-			return;
-		}
-
 		Player p = e.getPlayer();
 		ItemStack item = e.getItem();
 		Block b = e.getClickedBlock();
 
-		if (item == null) {
+		if (item == null || !m.isWorldEnabled(p.getWorld())) {
 			return;
 		}
 
-		if (b.getType() == Material.TNT && m.isWorldEnabled(b.getWorld())
-				&& (item.getType() == Material.FLINT_AND_STEEL || item.getType() == Material.FIREBALL)) {
-			m.spawnTNT(b, p, m.getRandomTNTName());
-			e.setCancelled(true);
+		if (m.getConfig().getBoolean("Throw.Enable")) {
+			if (item.getType() == Material.TNT
+					&& (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
+				e.setCancelled(true);
+
+				if (throwCooldown.contains(p.getUniqueId())) {
+					Bukkit.getScheduler().runTask(m, p::updateInventory);
+					return;
+				}
+
+				m.spawnTNT(p.getEyeLocation().getBlock(), p, m.getRandomTNTName()).setVelocity(
+						p.getLocation().getDirection().multiply(m.getConfig().getDouble("Throw.Velocity")));
+				throwCooldown.add(p.getUniqueId());
+				Bukkit.getScheduler().runTaskLater(m, () -> throwCooldown.remove(p.getUniqueId()),
+						m.getConfig().getInt("Throw.Delay") * 20);
+
+				if (p.getGameMode() != GameMode.CREATIVE) {
+					Inventory inv = p.getInventory();
+					ItemStack item2 = inv.getItem(inv.first(Material.TNT));
+					item2.setAmount(item2.getAmount() - 1);
+					inv.setItem(inv.first(Material.TNT), item2);
+				}
+			}
+		} else if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !e.isCancelled()) {
+			if (b.getType() == Material.TNT
+					&& (item.getType() == Material.FLINT_AND_STEEL || item.getType() == Material.FIREBALL)) {
+				m.spawnTNT(b, p, m.getRandomTNTName());
+				e.setCancelled(true);
+			}
 		}
 	}
 

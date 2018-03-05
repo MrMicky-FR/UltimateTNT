@@ -74,3 +74,10 @@ TNTDamage: 5.0
 
 #If enable, all explosions will be handle by the plugin (for realistic explosion or blcoks restore)
 AllExplosions: false
+
+#If enable you can throw a tnt by right clicking with a tnt in your hand
+Throw:
+  Enable: false
+  Velocity: 2
+  #Delay in seconds
+  Delay: 2
