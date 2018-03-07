@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -159,6 +160,8 @@ public class TNTListener implements Listener {
 			List<String> blacklist = m.getConfig().getStringList("BlacklistBlocks");
 			List<String> whitelists = m.getConfig().getStringList("Whitelist.BlockList");
 			String name = m.getRandomTNTName();
+			int maxFallingBlocks = m.getConfig().getInt("MaxFallingBlocksPerChunk")
+					- getFallingBlocksInChunk(e.getLocation().getChunk());
 
 			if (m.getConfig().getBoolean("DisableDrops")) {
 				e.setYield(0.0F);
@@ -175,16 +178,22 @@ public class TNTListener implements Listener {
 					bs.remove();
 				} else if (realistic) {
 					if (!blocks.containsValue(b.getLocation()) && !safeBlocksContains(b)) {
-						double x = (Math.random() - Math.random()) / 1.5;
-						double y = Math.random();
-						double z = (Math.random() - Math.random()) / 1.5;
+						if (maxFallingBlocks > 0) {
+							double x = (Math.random() - Math.random()) / 1.5;
+							double y = Math.random();
+							double z = (Math.random() - Math.random()) / 1.5;
 
-						// Deprecated but no other way to do that in 1.8
-						FallingBlock fall = b.getWorld().spawnFallingBlock(b.getLocation(), b.getType(), b.getData());
-						fall.setDropItem(false);
-						fall.setVelocity(new Vector(x, y, z));
-						if (restore) {
-							restoreBlock(b, fall);
+							// Deprecated but no other way to do that in 1.8
+							FallingBlock fall = b.getWorld().spawnFallingBlock(b.getLocation(), b.getType(),
+									b.getData());
+							fall.setDropItem(false);
+							fall.setVelocity(new Vector(x, y, z));
+							maxFallingBlocks--;
+							if (restore) {
+								restoreBlock(b, fall);
+							}
+						} else if (restore) {
+							restoreBlock(b, null);
 						}
 						b.setType(Material.AIR);
 					}
@@ -242,6 +251,16 @@ public class TNTListener implements Listener {
 				bs.update(true);
 			}
 		}, min + m.r.nextInt(max - min));
+	}
+
+	private int getFallingBlocksInChunk(Chunk c) {
+		int falling = 0;
+		for (Entity e : c.getEntities()) {
+			if (e.getType() == EntityType.FALLING_BLOCK) {
+				falling++;
+			}
+		}
+		return falling;
 	}
 
 	private boolean safeBlocksContains(Block b) {

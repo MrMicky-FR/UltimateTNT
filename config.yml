@@ -82,3 +82,6 @@ Throw:
   DisableOnSneak: true
   #Delay in seconds
   Delay: 2
+
+#Max of falling blocks per chunk spawn in the realistic explosion
+MaxFallingBlocksPerChunk: 1000
