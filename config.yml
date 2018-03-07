@@ -78,6 +78,7 @@ AllExplosions: false
 #If enable you can throw a tnt by right clicking with a tnt in your hand
 Throw:
   Enable: false
-  Velocity: 2
+  Velocity: 2.0
+  DisableOnSneak: true
   #Delay in seconds
   Delay: 2

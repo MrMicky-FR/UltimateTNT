@@ -76,8 +76,8 @@ public class TNTListener implements Listener {
 			return;
 		}
 
-		if (m.getConfig().getBoolean("Throw.Enable")) {
-			if (item.getType() == Material.TNT
+		if (m.getConfig().getBoolean("Throw.Enable") && p.getItemInHand().getType() == Material.TNT) {
+			if (!(p.isSneaking() && m.getConfig().getBoolean("Throw.DisableOnSneak"))
 					&& (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
 				e.setCancelled(true);
 
@@ -93,18 +93,15 @@ public class TNTListener implements Listener {
 						m.getConfig().getInt("Throw.Delay") * 20);
 
 				if (p.getGameMode() != GameMode.CREATIVE) {
-					Inventory inv = p.getInventory();
-					ItemStack item2 = inv.getItem(inv.first(Material.TNT));
+					ItemStack item2 = p.getItemInHand();
 					item2.setAmount(item2.getAmount() - 1);
-					inv.setItem(inv.first(Material.TNT), item2);
+					p.setItemInHand(item2);
 				}
 			}
-		} else if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !e.isCancelled()) {
-			if (b.getType() == Material.TNT
-					&& (item.getType() == Material.FLINT_AND_STEEL || item.getType() == Material.FIREBALL)) {
-				m.spawnTNT(b, p, m.getRandomTNTName());
-				e.setCancelled(true);
-			}
+		} else if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !e.isCancelled() && b.getType() == Material.TNT
+				&& (item.getType() == Material.FLINT_AND_STEEL || item.getType() == Material.FIREBALL)) {
+			m.spawnTNT(b, p, m.getRandomTNTName());
+			e.setCancelled(true);
 		}
 	}
 
