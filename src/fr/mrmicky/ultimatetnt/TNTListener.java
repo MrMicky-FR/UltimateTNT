@@ -12,10 +12,12 @@ import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
@@ -34,6 +36,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.DirectionalContainer;
 import org.bukkit.util.Vector;
@@ -98,6 +101,9 @@ public class TNTListener implements Listener {
 					item2.setAmount(item2.getAmount() - 1);
 					p.setItemInHand(item2);
 				}
+
+				p.playSound(p.getLocation(), Sound.valueOf(Bukkit.getServer().getClass().getName().contains("1.8")
+						? "CHICKEN_EGG_POP" : "ENTITY_CHICKEN_EGG"), 1.0F, 1.0F);
 			}
 		} else if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !e.isCancelled() && b.getType() == Material.TNT
 				&& (item.getType() == Material.FLINT_AND_STEEL || item.getType() == Material.FIREBALL)) {
@@ -226,7 +232,18 @@ public class TNTListener implements Listener {
 		if (fall != null) {
 			fallingBlocks.put(fall, b.getLocation());
 		}
+
 		final BlockState bs = b.getState();
+		String[] signLines = bs instanceof Sign ? ((Sign) bs).getLines() : null;
+		ItemStack[] items = bs instanceof InventoryHolder ? ((InventoryHolder) bs).getInventory().getContents() : null;
+
+		if (items != null) {
+			for (int i = 0; i < items.length; i++) {
+				if (items[i] != null) {
+					items[i] = items[i].clone();
+				}
+			}
+		}
 
 		Bukkit.getScheduler().runTaskLater(m, () -> {
 			if (fall != null) {
@@ -249,6 +266,16 @@ public class TNTListener implements Listener {
 			if (!m.containsIgnoreCase(m.getConfig().getStringList("RestoreBlocks.RestoreBlacklist"),
 					bs.getType().toString())) {
 				bs.update(true);
+				BlockState bs2 = b.getState();
+				// restore inventory contents & signs lines
+				if (signLines != null && bs2 instanceof Sign) {
+					Sign s = (Sign) bs2;
+					for (int i = 0; i < 4; i++) {
+						s.setLine(i, signLines[i]);
+					}
+				} else if (items != null && bs2 instanceof InventoryHolder) {
+					((InventoryHolder) bs2).getInventory().setContents(items);
+				}
 			}
 		}, min + m.r.nextInt(max - min));
 	}
