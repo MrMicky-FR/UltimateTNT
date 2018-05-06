@@ -31,15 +31,8 @@ public class UltimateTNT extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		// Check the plugin.yml
-		if (!getName().equals("UltimateTNT") || !getDescription().getAuthors().equals(Arrays.asList("MrMicky"))
-				|| !getDescription().getWebsite().equals("https://www.spigotmc.org/resources/ultimatetnt.49388/")) {
-			getLogger().severe("The plugin.yml has been modified. Disabling plugin.");
-			getServer().getPluginManager().disablePlugin(this);
-			return;
-		}
-
 		saveDefaultConfig();
+
 		getCommand("ultimatetnt").setExecutor(new CommandUltimateTNT(this));
 		getServer().getPluginManager().registerEvents(new TNTListener(this), this);
 
@@ -73,7 +66,7 @@ public class UltimateTNT extends JavaPlugin {
 
 	public String getRandomTNTName() {
 		List<String> names = getConfig().getStringList("Names");
-		return names.get(r.nextInt(names.size())).replace('&', 'ง');
+		return names.get(r.nextInt(names.size())).replace('&', 'ยง');
 	}
 
 	public TNTPrimed spawnTNT(Block b, Player p, String tntName) {
