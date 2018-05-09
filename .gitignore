@@ -5,22 +5,14 @@
 
 # IntelliJ
 .idea/
-
-# Maven
-build.xml
-target/
-dependency-reduced-pom.xml
-
-# Random
-build/
-bin/
-dist/
-manifest.mf
-
-*.log*
+*.iml
+*.iws
+out
 
 # Mac
-.DS_Store/
+.DS_Store
 
-# Random stuff
-Temp_*
+# Maven
+log/
+target/
+dependency-reduced-pom.xml
