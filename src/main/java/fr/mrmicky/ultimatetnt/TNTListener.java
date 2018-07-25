@@ -110,9 +110,22 @@ public class TNTListener implements Listener {
 
         if (b.getType() == Material.AIR) {
             m.spawnTNT(b, null, m.getRandomTNTName());
-            ItemStack item2 = inv.getItem(inv.first(Material.TNT));
-            item2.setAmount(item2.getAmount() - 1);
-            inv.setItem(inv.first(Material.TNT), item2);
+
+            Bukkit.getScheduler().runTask(m, () -> {
+                int slot = inv.first(Material.TNT);
+
+                if (slot < 0) {
+                    m.getLogger().warning("No TNT in BlockDispenseEvent");
+                    return;
+                }
+
+                ItemStack item2 = inv.getItem(slot);
+                if (item2.getAmount() <= 1) {
+                    inv.clear(slot);
+                } else {
+                    item2.setAmount(item2.getAmount() - 1);
+                }
+            });
         }
     }
 
