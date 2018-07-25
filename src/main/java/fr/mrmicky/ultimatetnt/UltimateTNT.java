@@ -1,5 +1,6 @@
 package fr.mrmicky.ultimatetnt;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -19,6 +20,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
 
 public class UltimateTNT extends JavaPlugin {
 
@@ -65,7 +67,7 @@ public class UltimateTNT extends JavaPlugin {
 
     public String getRandomTNTName() {
         List<String> names = getConfig().getStringList("Names");
-        return names.get(r.nextInt(names.size())).replace('&', '§');
+        return ChatColor.translateAlternateColorCodes('&', names.get(r.nextInt(names.size())));
     }
 
     public TNTPrimed spawnTNT(Block b, Player p, String tntName) {
@@ -111,7 +113,7 @@ public class UltimateTNT extends JavaPlugin {
                 Object craftTNT = tntHandleMethod.invoke(tnt);
                 tntSourceField.set(craftTNT, playerHandleMethod.invoke(p));
             } catch (ReflectiveOperationException e) {
-                e.printStackTrace();
+                getLogger().log(Level.WARNING, "Cannot set the source for " + tnt, e);
             }
         }
         return tnt;

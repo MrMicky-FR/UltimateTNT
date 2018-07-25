@@ -42,7 +42,7 @@ public class TNTListener implements Listener {
         Player p = e.getPlayer();
         Block b = e.getBlock();
 
-        if (p == null || b == null) {
+        if (p == null) {
             return;
         }
 
@@ -52,6 +52,7 @@ public class TNTListener implements Listener {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(PlayerInteractEvent e) {
         Player p = e.getPlayer();
@@ -232,8 +233,7 @@ public class TNTListener implements Listener {
     @EventHandler
     public void onBlockChange(EntityChangeBlockEvent e) {
         if (e.getEntityType() == EntityType.FALLING_BLOCK && fallingBlocks.containsKey(e.getEntity())) {
-            blocks.put(fallingBlocks.get(e.getEntity()), e.getBlock().getLocation());
-            fallingBlocks.remove(e.getEntity());
+            blocks.put(fallingBlocks.remove(e.getEntity()), e.getBlock().getLocation());
         }
     }
 
