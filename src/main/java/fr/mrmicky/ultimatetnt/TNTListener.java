@@ -80,11 +80,15 @@ public class TNTListener implements Listener {
 
                 if (p.getGameMode() != GameMode.CREATIVE) {
                     ItemStack item2 = p.getItemInHand();
-                    item2.setAmount(item2.getAmount() - 1);
+                    if (item2.getAmount() > 1) {
+                        item2.setAmount(item2.getAmount() - 1);
+                    } else {
+                        item2 = null;
+                    }
                     p.setItemInHand(item2);
                 }
 
-                p.playSound(p.getLocation(), Sound.valueOf(Bukkit.getServer().getClass().getName().contains("1.8")
+                p.playSound(p.getLocation(), Sound.valueOf(Bukkit.getVersion().contains("1.8")
                         ? "CHICKEN_EGG_POP" : "ENTITY_CHICKEN_EGG"), 1.0F, 1.0F);
             }
         } else if (e.getAction() == Action.RIGHT_CLICK_BLOCK && !e.isCancelled() && b.getType() == Material.TNT
@@ -115,15 +119,27 @@ public class TNTListener implements Listener {
                 int slot = inv.first(Material.TNT);
 
                 if (slot < 0) {
-                    m.getLogger().warning("No TNT in BlockDispenseEvent");
-                    return;
+                    // 1.13 support
+                    for (int i = 0; i < inv.getSize(); i++) {
+                        ItemStack item1 = inv.getItem(i);
+                        if (item1 != null && item1.getType() == Material.TNT) {
+                            slot = i;
+                            break;
+                        }
+                    }
+
+                    if (slot < 0) {
+                        m.getLogger().warning("No TNT in BlockDispenseEvent");
+                        return;
+                    }
                 }
 
                 ItemStack item2 = inv.getItem(slot);
-                if (item2.getAmount() <= 1) {
-                    inv.clear(slot);
-                } else {
+                if (item2.getAmount() > 1) {
                     item2.setAmount(item2.getAmount() - 1);
+                    inv.setItem(slot, item2);
+                } else {
+                    inv.clear(slot);
                 }
             });
         }
