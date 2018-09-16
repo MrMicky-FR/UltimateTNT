@@ -32,8 +32,8 @@ public class CommandUltimateTNT implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length > 0 && sender.hasPermission("ultimatetnt.reload")) {
-            if (StringUtil.startsWithIgnoreCase("reload", args[1])) {
+        if (args.length == 1 && sender.hasPermission("ultimatetnt.reload")) {
+            if (StringUtil.startsWithIgnoreCase("reload", args[0])) {
                 return Collections.singletonList("reload");
             }
         }
