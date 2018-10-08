@@ -232,7 +232,7 @@ public class TNTListener implements Listener {
 
     @EventHandler
     public void onBlockChange(EntityChangeBlockEvent e) {
-        if (e.getEntityType() == EntityType.FALLING_BLOCK && fallingBlocks.containsKey(e.getEntity())) {
+        if (e.getEntity() instanceof FallingBlock && fallingBlocks.containsKey(e.getEntity())) {
             blocks.put(fallingBlocks.remove(e.getEntity()), e.getBlock().getLocation());
         }
     }
@@ -288,7 +288,7 @@ public class TNTListener implements Listener {
                     ((InventoryHolder) bs2).getInventory().setContents(items);
                 }
             }
-        }, min + m.r.nextInt(max - min));
+        }, min + UltimateTNT.RANDOM.nextInt(max - min));
     }
 
     private int getFallingBlocksInChunk(Chunk c) {

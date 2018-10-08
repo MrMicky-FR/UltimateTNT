@@ -24,7 +24,7 @@ import java.util.logging.Level;
 
 public class UltimateTNT extends JavaPlugin {
 
-    Random r = new Random();
+    public static final Random RANDOM = new Random();
     // Reflection
     private Method playerHandleMethod;
     private Method tntHandleMethod;
@@ -38,8 +38,7 @@ public class UltimateTNT extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new TNTListener(this), this);
 
         if (getConfig().getBoolean("UpdateChecker")) {
-            // Delay so the message have better visibility
-            getServer().getScheduler().runTaskLaterAsynchronously(this, () -> checkUpdate(), 60);
+            getServer().getScheduler().runTaskAsynchronously(this, this::checkUpdate);
         }
 
         getLogger().info("The plugin has been successfully activated");
@@ -48,16 +47,15 @@ public class UltimateTNT extends JavaPlugin {
     private void checkUpdate() {
         try {
             URL url = new URL("https://api.spigotmc.org/legacy/update.php?resource=49388");
-            String lastVersion = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()))
-                    .readLine();
-            if (!getDescription().getVersion().equalsIgnoreCase(lastVersion)) {
-                getLogger().info("A new version is avaible ! Last version is " + lastVersion + " and you are on "
-                        + getDescription().getVersion());
-                getLogger().info("You can download it on: " + getDescription().getWebsite());
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
+                String lastVersion = reader.readLine();
+                if (!getDescription().getVersion().equalsIgnoreCase(lastVersion)) {
+                    getLogger().warning("A new version is available ! Last version is " + lastVersion + " and you are on " + getDescription().getVersion());
+                    getLogger().warning("You can download it on: " + getDescription().getWebsite());
+                }
             }
         } catch (Exception e) {
-            getLogger().warning("Failed to check for update on SpigotMC:");
-            e.printStackTrace();
+            // Don't display an error
         }
     }
 
@@ -67,7 +65,7 @@ public class UltimateTNT extends JavaPlugin {
 
     public String getRandomTNTName() {
         List<String> names = getConfig().getStringList("Names");
-        return ChatColor.translateAlternateColorCodes('&', names.get(r.nextInt(names.size())));
+        return ChatColor.translateAlternateColorCodes('&', names.get(RANDOM.nextInt(names.size())));
     }
 
     public TNTPrimed spawnTNT(Block b, Player p, String tntName) {
