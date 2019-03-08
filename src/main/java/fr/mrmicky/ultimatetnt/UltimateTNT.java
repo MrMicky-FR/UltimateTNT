@@ -1,11 +1,11 @@
 package fr.mrmicky.ultimatetnt;
 
-import org.bukkit.ChatColor;
+import fr.mrmicky.ultimatetnt.utils.ChatUtils;
+import fr.mrmicky.ultimatetnt.utils.TntUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,22 +13,17 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
 
 public class UltimateTNT extends JavaPlugin {
 
     public static final Random RANDOM = new Random();
-    // Reflection
-    private Method playerHandleMethod;
-    private Method tntHandleMethod;
-    private Field tntSourceField;
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0");
 
     @Override
     public void onEnable() {
@@ -40,8 +35,6 @@ public class UltimateTNT extends JavaPlugin {
         if (getConfig().getBoolean("UpdateChecker")) {
             getServer().getScheduler().runTaskAsynchronously(this, this::checkUpdate);
         }
-
-        getLogger().info("The plugin has been successfully activated");
     }
 
     private void checkUpdate() {
@@ -54,8 +47,8 @@ public class UltimateTNT extends JavaPlugin {
                     getLogger().warning("You can download it on: " + getDescription().getWebsite());
                 }
             }
-        } catch (Exception e) {
-            // Don't display an error
+        } catch (IOException e) {
+            // ignore
         }
     }
 
@@ -65,13 +58,13 @@ public class UltimateTNT extends JavaPlugin {
 
     public String getRandomTNTName() {
         List<String> names = getConfig().getStringList("Names");
-        return ChatColor.translateAlternateColorCodes('&', names.get(RANDOM.nextInt(names.size())));
+        return ChatUtils.color(names.get(RANDOM.nextInt(names.size())));
     }
 
     public TNTPrimed spawnTNT(Block b, Player p, String tntName) {
         b.setType(Material.AIR);
         Location loc = b.getLocation().add(0.5, 0.25, 0.5);
-        TNTPrimed tnt = (TNTPrimed) b.getWorld().spawnEntity(loc, EntityType.PRIMED_TNT);
+        TNTPrimed tnt = b.getWorld().spawn(loc, TNTPrimed.class);
 
         tnt.setVelocity(new Vector(0, 0.25, 0));
         tnt.teleport(loc);
@@ -85,12 +78,11 @@ public class UltimateTNT extends JavaPlugin {
             if (!tntName.contains("%timer")) {
                 tnt.setCustomName(tntName);
             } else {
-                DecimalFormat df = new DecimalFormat("0.0");
                 new BukkitRunnable() {
 
                     @Override
                     public void run() {
-                        tnt.setCustomName(tntName.replace("%timer", df.format(tnt.getFuseTicks() / 20.0D)));
+                        tnt.setCustomName(tntName.replace("%timer", DECIMAL_FORMAT.format(tnt.getFuseTicks() / 20.0)));
 
                         if (!tnt.isValid() || tnt.getFuseTicks() <= 0) {
                             cancel();
@@ -102,16 +94,9 @@ public class UltimateTNT extends JavaPlugin {
 
         if (p != null) {
             try {
-                if (playerHandleMethod == null) {
-                    playerHandleMethod = p.getClass().getDeclaredMethod("getHandle");
-                    tntHandleMethod = tnt.getClass().getDeclaredMethod("getHandle");
-                    tntSourceField = tntHandleMethod.getReturnType().getDeclaredField("source");
-                    tntSourceField.setAccessible(true);
-                }
-                Object craftTNT = tntHandleMethod.invoke(tnt);
-                tntSourceField.set(craftTNT, playerHandleMethod.invoke(p));
+                TntUtils.setTntSource(tnt, p);
             } catch (ReflectiveOperationException e) {
-                getLogger().log(Level.WARNING, "Cannot set the source for " + tnt, e);
+                getLogger().warning("Cannot set the source for " + tnt + ": " + e.getClass().getSimpleName() + " " + e.getMessage());
             }
         }
         return tnt;

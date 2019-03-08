@@ -1,5 +1,7 @@
 package fr.mrmicky.ultimatetnt;
 
+import fr.mrmicky.ultimatetnt.utils.ChatUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -10,23 +12,26 @@ import java.util.List;
 
 public class CommandUltimateTNT implements TabExecutor {
 
-    private UltimateTNT m;
+    private UltimateTNT plugin;
 
-    CommandUltimateTNT(UltimateTNT m) {
-        this.m = m;
+    public CommandUltimateTNT(UltimateTNT plugin) {
+        this.plugin = plugin;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length == 0 || !sender.hasPermission("ultimatetnt.reload")) {
-            sender.sendMessage("§c" + m.getName() + "§6 by §cMrMicky §6version §c" + m.getDescription().getVersion());
-            sender.sendMessage("§6Download: §c" + m.getDescription().getWebsite());
-        } else if (args[0].equalsIgnoreCase("reload")) {
-            m.reloadConfig();
-            sender.sendMessage("§aConfig reloaded");
-        } else {
-            sender.sendMessage("§c/ultimatetnt reload");
+        if (args.length == 0) {
+            sendUsage(sender);
+            return true;
         }
+
+        if (args[0].equalsIgnoreCase("reload") && sender.hasPermission("ultimatetnt.reload")) {
+            plugin.reloadConfig();
+            sender.sendMessage(ChatColor.YELLOW + "Config reloaded");
+        }
+
+        sendUsage(sender);
+
         return true;
     }
 
@@ -37,6 +42,15 @@ public class CommandUltimateTNT implements TabExecutor {
                 return Collections.singletonList("reload");
             }
         }
+
         return Collections.emptyList();
+    }
+
+    private void sendUsage(CommandSender sender) {
+        sender.sendMessage(ChatUtils.color("&cUltimateTNT v" + plugin.getDescription().getVersion() + " &7by &cMrMicky&7."));
+
+        if (sender.hasPermission("ultimatetnt.reload")) {
+            sender.sendMessage(ChatUtils.color("&7- &c/ultimatetnt reload"));
+        }
     }
 }
