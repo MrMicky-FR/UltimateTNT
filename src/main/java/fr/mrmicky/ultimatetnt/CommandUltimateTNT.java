@@ -1,6 +1,5 @@
 package fr.mrmicky.ultimatetnt;
 
-import fr.mrmicky.ultimatetnt.utils.ChatUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -19,7 +18,7 @@ public class CommandUltimateTNT implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
             sendUsage(sender);
             return true;
@@ -28,6 +27,7 @@ public class CommandUltimateTNT implements TabExecutor {
         if (args[0].equalsIgnoreCase("reload") && sender.hasPermission("ultimatetnt.reload")) {
             plugin.reloadConfig();
             sender.sendMessage(ChatColor.YELLOW + "Config reloaded");
+            return true;
         }
 
         sendUsage(sender);
@@ -47,10 +47,10 @@ public class CommandUltimateTNT implements TabExecutor {
     }
 
     private void sendUsage(CommandSender sender) {
-        sender.sendMessage(ChatUtils.color("&cUltimateTNT v" + plugin.getDescription().getVersion() + " &7by &cMrMicky&7."));
+        sender.sendMessage(plugin.color("&cUltimateTNT v" + plugin.getDescription().getVersion() + " &7by &cMrMicky&7."));
 
         if (sender.hasPermission("ultimatetnt.reload")) {
-            sender.sendMessage(ChatUtils.color("&7- &c/ultimatetnt reload"));
+            sender.sendMessage(plugin.color("&7- &c/ultimatetnt reload"));
         }
     }
 }

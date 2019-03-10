@@ -1,12 +1,10 @@
 package fr.mrmicky.ultimatetnt;
 
-import fr.mrmicky.ultimatetnt.utils.ChatUtils;
 import fr.mrmicky.ultimatetnt.utils.TntUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -58,16 +56,20 @@ public class UltimateTNT extends JavaPlugin {
 
     public String getRandomTNTName() {
         List<String> names = getConfig().getStringList("Names");
-        return ChatUtils.color(names.get(RANDOM.nextInt(names.size())));
+        return color(names.get(RANDOM.nextInt(names.size())));
     }
 
-    public TNTPrimed spawnTNT(Block b, Player p, String tntName) {
-        b.setType(Material.AIR);
-        Location loc = b.getLocation().add(0.5, 0.25, 0.5);
-        TNTPrimed tnt = b.getWorld().spawn(loc, TNTPrimed.class);
+    public TNTPrimed spawnTNT(Location loc, Entity source, String tntName) {
+        return spawnTNT(loc, source, tntName, true);
+    }
 
-        tnt.setVelocity(new Vector(0, 0.25, 0));
-        tnt.teleport(loc);
+    public TNTPrimed spawnTNT(Location loc, Entity source, String tntName, boolean applyVelocity) {
+        TNTPrimed tnt = loc.getWorld().spawn(loc.add(0.5, 0.25, 0.5), TNTPrimed.class);
+
+        if (applyVelocity) {
+            tnt.setVelocity(new Vector(0, 0.25, 0));
+            tnt.teleport(loc);
+        }
         tnt.setIsIncendiary(getConfig().getBoolean("Fire"));
         tnt.setFuseTicks(getConfig().getInt("ExplodeTicks"));
         tnt.setYield((float) getConfig().getDouble("Radius"));
@@ -92,9 +94,9 @@ public class UltimateTNT extends JavaPlugin {
             }
         }
 
-        if (p != null) {
+        if (source != null) {
             try {
-                TntUtils.setTntSource(tnt, p);
+                TntUtils.setTntSource(tnt, source);
             } catch (ReflectiveOperationException e) {
                 getLogger().warning("Cannot set the source for " + tnt + ": " + e.getClass().getSimpleName() + " " + e.getMessage());
             }
@@ -102,12 +104,11 @@ public class UltimateTNT extends JavaPlugin {
         return tnt;
     }
 
-    public boolean containsIgnoreCase(List<String> list, String s) {
-        for (String l : list) {
-            if (l.equalsIgnoreCase(s)) {
-                return true;
-            }
-        }
-        return false;
+    public String color(String s) {
+        return ChatColor.translateAlternateColorCodes('&', s);
+    }
+
+    public boolean containsIgnoreCase(List<String> list, String str) {
+        return list.stream().anyMatch(str::equalsIgnoreCase);
     }
 }
