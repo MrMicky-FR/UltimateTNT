@@ -18,7 +18,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
 
-public class UltimateTNT extends JavaPlugin {
+public final class UltimateTNT extends JavaPlugin {
 
     public static final Random RANDOM = new Random();
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0");

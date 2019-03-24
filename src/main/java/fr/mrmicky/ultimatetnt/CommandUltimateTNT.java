@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CommandUltimateTNT implements TabExecutor {
 
-    private UltimateTNT plugin;
+    private final UltimateTNT plugin;
 
     public CommandUltimateTNT(UltimateTNT plugin) {
         this.plugin = plugin;

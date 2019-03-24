@@ -45,13 +45,13 @@ import java.util.UUID;
 
 public class TNTListener implements Listener {
 
-    private Set<UUID> throwCooldown = new HashSet<>();
+    private final Set<UUID> throwCooldown = new HashSet<>();
 
-    private Map<FallingBlock, Location> fallingBlocks = new HashMap<>();
-    private Map<Location, Location> blocks = new HashMap<>();
-    private List<List<Block>> safeBlocks = new ArrayList<>();
+    private final Map<FallingBlock, Location> fallingBlocks = new HashMap<>();
+    private final Map<Location, Location> blocks = new HashMap<>();
+    private final List<List<Block>> safeBlocks = new ArrayList<>();
 
-    private UltimateTNT plugin;
+    private final UltimateTNT plugin;
 
     public TNTListener(UltimateTNT plugin) {
         this.plugin = plugin;
