@@ -50,8 +50,8 @@ public final class UltimateTNT extends JavaPlugin {
         }
     }
 
-    public boolean isWorldEnabled(World w) {
-        return !containsIgnoreCase(getConfig().getStringList("DisableWorlds"), w.getName());
+    public boolean isWorldEnabled(World world) {
+        return !containsIgnoreCase(getConfig().getStringList("DisableWorlds"), world.getName());
     }
 
     public String getRandomTNTName() {
@@ -108,7 +108,7 @@ public final class UltimateTNT extends JavaPlugin {
         return ChatColor.translateAlternateColorCodes('&', s);
     }
 
-    public boolean containsIgnoreCase(List<String> list, String str) {
-        return list.stream().anyMatch(str::equalsIgnoreCase);
+    public boolean containsIgnoreCase(List<String> list, String s) {
+        return list.stream().anyMatch(s::equalsIgnoreCase);
     }
 }

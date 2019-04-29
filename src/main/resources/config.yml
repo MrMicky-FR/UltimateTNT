@@ -83,3 +83,8 @@ Throw:
 
 # Max of falling blocks per chunk spawn in the realistic explosion
 MaxFallingBlocksPerChunk: 1000
+
+ObsidianBreaker:
+  Enable: false
+  # Number of explosions need before the obsidian break
+  Amount: 3
