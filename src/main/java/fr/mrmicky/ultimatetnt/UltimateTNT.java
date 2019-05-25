@@ -59,11 +59,11 @@ public final class UltimateTNT extends JavaPlugin {
         return color(names.get(RANDOM.nextInt(names.size())));
     }
 
-    public TNTPrimed spawnTNT(Location loc, Entity source, String tntName) {
-        return spawnTNT(loc, source, tntName, true);
+    public TNTPrimed spawnTNT(Location loc, Entity source, String name) {
+        return spawnTNT(loc, source, name, true);
     }
 
-    public TNTPrimed spawnTNT(Location loc, Entity source, String tntName, boolean applyVelocity) {
+    public TNTPrimed spawnTNT(Location loc, Entity source, String name, boolean applyVelocity) {
         TNTPrimed tnt = loc.getWorld().spawn(loc.add(0.5, 0.25, 0.5), TNTPrimed.class);
 
         if (applyVelocity) {
@@ -77,14 +77,14 @@ public final class UltimateTNT extends JavaPlugin {
         if (getConfig().getBoolean("CustomName")) {
             tnt.setCustomNameVisible(true);
 
-            if (!tntName.contains("%timer")) {
-                tnt.setCustomName(tntName);
+            if (!name.contains("%timer")) {
+                tnt.setCustomName(name);
             } else {
                 new BukkitRunnable() {
 
                     @Override
                     public void run() {
-                        tnt.setCustomName(tntName.replace("%timer", DECIMAL_FORMAT.format(tnt.getFuseTicks() / 20.0)));
+                        tnt.setCustomName(name.replace("%timer", DECIMAL_FORMAT.format(tnt.getFuseTicks() / 20.0)));
 
                         if (!tnt.isValid() || tnt.getFuseTicks() <= 0) {
                             cancel();

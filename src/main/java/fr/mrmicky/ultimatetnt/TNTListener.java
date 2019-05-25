@@ -64,7 +64,7 @@ public class TNTListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent e) {
-        obsidianBlocks.keySet().removeIf(loc -> loc.blockEquals(e.getBlock()));
+        obsidianBlocks.remove(new BlockLocation(e.getBlock()));
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
