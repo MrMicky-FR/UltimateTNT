@@ -23,12 +23,12 @@ public class BlockLocation {
         this.world = Objects.requireNonNull(world, "world");
     }
 
-    public BlockLocation(Location loc) {
-        this(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName());
+    public BlockLocation(Location location) {
+        this(location.getBlockX(), location.getBlockY(), location.getBlockZ(), location.getWorld().getName());
     }
 
-    public BlockLocation(Block b) {
-        this(b.getX(), b.getY(), b.getZ(), b.getWorld().getName());
+    public BlockLocation(Block block) {
+        this(block.getX(), block.getY(), block.getZ(), block.getWorld().getName());
     }
 
     public int getX() {
@@ -47,12 +47,12 @@ public class BlockLocation {
         return world;
     }
 
-    public boolean isInChunk(Chunk c) {
-        return x >> 4 == c.getX() && z >> 4 == c.getZ() && world.equals(c.getWorld().getName());
+    public boolean isInChunk(Chunk chunk) {
+        return x >> 4 == chunk.getX() && z >> 4 == chunk.getZ() && world.equals(chunk.getWorld().getName());
     }
 
-    public boolean blockEquals(Block b) {
-        return x == b.getX() && y == b.getY() && z == b.getZ() && world.equals(b.getWorld().getName());
+    public boolean blockEquals(Block block) {
+        return x == block.getX() && y == block.getY() && z == block.getZ() && world.equals(block.getWorld().getName());
     }
 
     @Override

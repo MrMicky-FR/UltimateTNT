@@ -59,16 +59,16 @@ public final class UltimateTNT extends JavaPlugin {
         return color(names.get(RANDOM.nextInt(names.size())));
     }
 
-    public TNTPrimed spawnTNT(Location loc, Entity source, String name) {
-        return spawnTNT(loc, source, name, true);
+    public TNTPrimed spawnTNT(Location location, Entity source, String name) {
+        return spawnTNT(location, source, name, true);
     }
 
-    public TNTPrimed spawnTNT(Location loc, Entity source, String name, boolean applyVelocity) {
-        TNTPrimed tnt = loc.getWorld().spawn(loc.add(0.5, 0.25, 0.5), TNTPrimed.class);
+    public TNTPrimed spawnTNT(Location location, Entity source, String name, boolean applyVelocity) {
+        TNTPrimed tnt = location.getWorld().spawn(location.add(0.5, 0.25, 0.5), TNTPrimed.class);
 
         if (applyVelocity) {
             tnt.setVelocity(new Vector(0, 0.25, 0));
-            tnt.teleport(loc);
+            tnt.teleport(location);
         }
         tnt.setIsIncendiary(getConfig().getBoolean("Fire"));
         tnt.setFuseTicks(getConfig().getInt("ExplodeTicks"));
