@@ -150,16 +150,12 @@ public class TNTListener implements Listener {
             return;
         }
 
-        e.setCancelled(true);
-
         Dispenser dispenser = (Dispenser) e.getBlock().getState();
         Inventory inv = dispenser.getInventory();
         BlockFace face = ((Directional) dispenser.getData()).getFacing();
         Block block = e.getBlock().getRelative(face);
 
-        if (block.getType() != Material.AIR) {
-            return;
-        }
+        e.setCancelled(true);
 
         plugin.spawnTNT(block.getLocation(), null, plugin.getRandomTNTName());
 
