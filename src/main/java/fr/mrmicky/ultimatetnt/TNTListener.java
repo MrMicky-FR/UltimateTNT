@@ -4,7 +4,6 @@ import fr.mrmicky.ultimatetnt.utils.BlockLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -38,6 +37,7 @@ import org.bukkit.material.Directional;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -50,8 +50,8 @@ public class TNTListener implements Listener {
 
     private final Set<UUID> throwCooldown = new HashSet<>();
 
-    private final Map<FallingBlock, Location> fallingBlocks = new HashMap<>();
-    private final Map<Location, Location> blocks = new HashMap<>();
+    private final Map<UUID, BlockLocation> fallingBlocks = new HashMap<>();
+    private final Map<BlockLocation, BlockLocation> blocks = new HashMap<>();
     private final List<List<Block>> safeBlocks = new ArrayList<>();
 
     private final Map<BlockLocation, Integer> obsidianBlocks = new HashMap<>();
@@ -63,16 +63,16 @@ public class TNTListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onBreak(BlockBreakEvent e) {
+    public void onBlockBreak(BlockBreakEvent e) {
         obsidianBlocks.remove(new BlockLocation(e.getBlock()));
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onPlace(BlockPlaceEvent e) {
+    public void onBlockPlace(BlockPlaceEvent e) {
         Player player = e.getPlayer();
         Block block = e.getBlock();
 
-        if (player == null || block.getType() != Material.TNT) {
+        if (block.getType() != Material.TNT) {
             return;
         }
 
@@ -91,7 +91,7 @@ public class TNTListener implements Listener {
 
     @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.HIGH)
-    public void onInteract(PlayerInteractEvent e) {
+    public void onPlayerInteract(PlayerInteractEvent e) {
         Player player = e.getPlayer();
         ItemStack item = e.getItem();
         Block block = e.getClickedBlock();
@@ -117,14 +117,14 @@ public class TNTListener implements Listener {
                         () -> throwCooldown.remove(player.getUniqueId()), plugin.getConfig().getInt("Throw.Delay") * 20);
 
                 if (player.getGameMode() != GameMode.CREATIVE) {
-                    ItemStack item2 = player.getItemInHand();
-                    if (item2.getAmount() > 1) {
-                        item2.setAmount(item2.getAmount() - 1);
+                    ItemStack handItem = player.getItemInHand();
+                    if (handItem.getAmount() > 1) {
+                        handItem.setAmount(handItem.getAmount() - 1);
                     } else {
-                        item2 = null;
+                        handItem = null;
                     }
 
-                    player.setItemInHand(item2);
+                    player.setItemInHand(handItem);
                 }
 
                 Sound sound = Sound.valueOf(Bukkit.getVersion().contains("1.8") ? "CHICKEN_EGG_POP" : "ENTITY_CHICKEN_EGG");
@@ -143,10 +143,10 @@ public class TNTListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onDispense(BlockDispenseEvent e) {
+    public void onBlockDispense(BlockDispenseEvent e) {
         ItemStack item = e.getItem();
 
-        if (item == null || item.getType() != Material.TNT || e.getBlock().getType() != Material.DISPENSER) {
+        if (item.getType() != Material.TNT || e.getBlock().getType() != Material.DISPENSER) {
             return;
         }
 
@@ -167,10 +167,10 @@ public class TNTListener implements Listener {
                 return;
             }
 
-            ItemStack item2 = inv.getItem(slot);
-            if (item2.getAmount() > 1) {
-                item2.setAmount(item2.getAmount() - 1);
-                inv.setItem(slot, item2);
+            ItemStack tntItem = inv.getItem(slot);
+            if (tntItem.getAmount() > 1) {
+                tntItem.setAmount(tntItem.getAmount() - 1);
+                inv.setItem(slot, tntItem);
             } else {
                 inv.clear(slot);
             }
@@ -178,7 +178,7 @@ public class TNTListener implements Listener {
     }
 
     @EventHandler
-    public void onDamage(EntityDamageEvent e) {
+    public void onEntityDamage(EntityDamageEvent e) {
         if (e.getEntityType() != EntityType.PLAYER || e.getCause() != DamageCause.FALL) {
             return;
         }
@@ -189,7 +189,7 @@ public class TNTListener implements Listener {
     }
 
     @EventHandler
-    public void onDamageByEntity(EntityDamageByEntityEvent e) {
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
         if (e.getEntityType() != EntityType.PLAYER || e.getDamager().getType() != EntityType.PRIMED_TNT) {
             return;
         }
@@ -200,7 +200,7 @@ public class TNTListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-    public void onExplodeObsidian(EntityExplodeEvent e) {
+    public void onEntityExplodeLow(EntityExplodeEvent e) {
         if (e.getEntityType() != EntityType.PRIMED_TNT || !plugin.getConfig().getBoolean("ObsidianBreaker.Enable")) {
             return;
         }
@@ -236,7 +236,7 @@ public class TNTListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onExplode(EntityExplodeEvent e) {
+    public void onEntityExplode(EntityExplodeEvent e) {
         if (e.getEntityType() != EntityType.PRIMED_TNT && e.getEntityType() != EntityType.MINECART_TNT && !plugin.getConfig().getBoolean("AllExplosions")) {
             return;
         }
@@ -273,7 +273,7 @@ public class TNTListener implements Listener {
                     || (whitelist && !plugin.containsIgnoreCase(blockWhitelist, block.getType().toString()))) {
                 blockIterator.remove();
             } else if (realistic) {
-                if (!blocks.containsValue(block.getLocation()) && !safeBlocksContains(block)) {
+                if (!blocks.containsValue(new BlockLocation(block)) && isNotSafeBlock(block)) {
                     if (maxFallingBlocks > 0) {
                         double x = (Math.random() - Math.random()) / 1.5;
                         double y = Math.random();
@@ -315,14 +315,14 @@ public class TNTListener implements Listener {
     }
 
     @EventHandler
-    public void onBlockChange(EntityChangeBlockEvent e) {
+    public void onEntityChangeBlock(EntityChangeBlockEvent e) {
         if (!(e.getEntity() instanceof FallingBlock)) {
             return;
         }
 
-        Location location = fallingBlocks.remove(e.getEntity());
+        BlockLocation location = fallingBlocks.remove(e.getEntity().getUniqueId());
         if (location != null) {
-            blocks.put(location, e.getBlock().getLocation());
+            blocks.put(location, new BlockLocation(e.getBlock()));
         }
     }
 
@@ -330,7 +330,7 @@ public class TNTListener implements Listener {
         int min = plugin.getConfig().getInt("RestoreBlocks.MinDelay");
         int max = plugin.getConfig().getInt("RestoreBlocks.MaxDelay");
         if (fallingBlock != null) {
-            fallingBlocks.put(fallingBlock, block.getLocation());
+            fallingBlocks.put(fallingBlock.getUniqueId(), new BlockLocation(block));
         }
 
         BlockState state = block.getState();
@@ -350,14 +350,14 @@ public class TNTListener implements Listener {
                 if (fallingBlock.isValid()) {
                     fallingBlock.remove();
                 }
-                fallingBlocks.remove(fallingBlock);
+                fallingBlocks.remove(fallingBlock.getUniqueId());
 
                 // Remove blocks spawn by falling blocks
-                Location location = blocks.remove(block.getLocation());
+                BlockLocation location = blocks.remove(new BlockLocation(block.getLocation()));
                 if (location != null) {
-                    Block block2 = location.getBlock();
-                    if (!safeBlocksContains(block2)) {
-                        block2.setType(Material.AIR);
+                    Block oldBlock = block.getWorld().getBlockAt(location.getX(), location.getY(), location.getZ());
+                    if (isNotSafeBlock(oldBlock)) {
+                        oldBlock.setType(Material.AIR);
                     }
                 }
             }
@@ -380,16 +380,12 @@ public class TNTListener implements Listener {
     }
 
     private int getFallingBlocksInChunk(Chunk chunk) {
-        int fallingBlocksCount = 0;
-        for (Entity entity : chunk.getEntities()) {
-            if (entity.getType() == EntityType.FALLING_BLOCK) {
-                fallingBlocksCount++;
-            }
-        }
-        return fallingBlocksCount;
+        return (int) Arrays.stream(chunk.getEntities())
+                .filter(e -> e.getType() == EntityType.FALLING_BLOCK)
+                .count();
     }
 
-    private boolean safeBlocksContains(Block b) {
-        return safeBlocks.stream().anyMatch(list -> list.contains(b));
+    private boolean isNotSafeBlock(Block b) {
+        return safeBlocks.stream().noneMatch(list -> list.contains(b));
     }
 }
