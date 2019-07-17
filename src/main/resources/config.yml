@@ -61,13 +61,13 @@ Whitelist:
   - 'STONE'
 
 # Create a realistic explosion ? 'DisableBreak' need to be false
-# Blocks will not be break but will be project arround the explosion
+# Blocks will not be break but will be project around the explosion
 RealisticExplosion: false
 
-# Reduce the fall damage by dividing the damages (usefull for TNT Fly). Set to 1.0 to not reduce it
+# Reduce the fall damage by dividing the damages (useful for TNT Fly). Set to 1.0 to not reduce it
 FallDamage: 5.0
 
-# Reduce the TNT damage by dividing the damages (usefull for TNT Fly). Set to 1.0 to not reduce it
+# Reduce the TNT damage by dividing the damages (useful for TNT Fly). Set to 1.0 to not reduce it
 TNTDamage: 5.0
 
 # If enable, all explosions (creeper, etc) will be handle by the plugin (for realistic explosion or blocks restore)
