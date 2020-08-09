@@ -6,9 +6,6 @@ import org.bukkit.entity.TNTPrimed;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-/**
- * @author MrMicky
- */
 public final class TntUtils {
 
     private TntUtils() {

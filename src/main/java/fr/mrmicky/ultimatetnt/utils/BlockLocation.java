@@ -6,9 +6,6 @@ import org.bukkit.block.Block;
 
 import java.util.Objects;
 
-/**
- * @author MrMicky
- */
 public class BlockLocation {
 
     private final int x;

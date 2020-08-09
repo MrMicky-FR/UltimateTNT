@@ -26,7 +26,7 @@ public class CommandUltimateTNT implements TabExecutor {
 
         if (args[0].equalsIgnoreCase("reload") && sender.hasPermission("ultimatetnt.reload")) {
             plugin.reloadConfig();
-            sender.sendMessage(ChatColor.YELLOW + "Config reloaded");
+            sender.sendMessage(ChatColor.GREEN + "The config has been reloaded.");
             return true;
         }
 

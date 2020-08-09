@@ -363,7 +363,7 @@ public class TNTListener implements Listener {
             }
 
             if (!plugin.containsIgnoreCase(plugin.getConfig().getStringList("RestoreBlocks.RestoreBlacklist"), state.getType().toString())) {
-                state.update(true);
+                state.update(true, false);
                 BlockState newState = block.getState();
                 // restore inventory contents & signs lines
                 if (signLines != null && newState instanceof Sign) {
