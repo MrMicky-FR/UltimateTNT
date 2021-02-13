@@ -98,7 +98,7 @@ public final class UltimateTNT extends JavaPlugin {
             try {
                 TntUtils.setTntSource(tnt, source);
             } catch (ReflectiveOperationException e) {
-                getLogger().warning("Cannot set the source for " + tnt + ": " + e.getClass().getSimpleName() + " " + e.getMessage());
+                getLogger().warning("Cannot set the source for " + tnt + " (" + e.getClass().getName() + "): " + e.getMessage());
             }
         }
         return tnt;

@@ -8,24 +8,28 @@ import java.util.Objects;
 
 public class BlockLocation {
 
+    private final String world;
     private final int x;
     private final int y;
     private final int z;
-    private final String world;
 
-    public BlockLocation(int x, int y, int z, String world) {
+    public BlockLocation(String world, int x, int y, int z) {
+        this.world = Objects.requireNonNull(world, "world");
         this.x = x;
         this.y = y;
         this.z = z;
-        this.world = Objects.requireNonNull(world, "world");
     }
 
     public BlockLocation(Location location) {
-        this(location.getBlockX(), location.getBlockY(), location.getBlockZ(), location.getWorld().getName());
+        this(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
     public BlockLocation(Block block) {
-        this(block.getX(), block.getY(), block.getZ(), block.getWorld().getName());
+        this(block.getWorld().getName(), block.getX(), block.getY(), block.getZ());
+    }
+
+    public String getWorld() {
+        return world;
     }
 
     public int getX() {
@@ -40,10 +44,6 @@ public class BlockLocation {
         return z;
     }
 
-    public String getWorld() {
-        return world;
-    }
-
     public boolean isInChunk(Chunk chunk) {
         return x >> 4 == chunk.getX() && z >> 4 == chunk.getZ() && world.equals(chunk.getWorld().getName());
     }
@@ -54,27 +54,23 @@ public class BlockLocation {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         BlockLocation that = (BlockLocation) o;
-        return x == that.x &&
-                y == that.y &&
-                z == that.z &&
-                world.equals(that.world);
+        return x == that.x && y == that.y && z == that.z && world.equals(that.world);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(x, y, z, world);
+        return Objects.hash(world, x, y, z);
     }
 
     @Override
     public String toString() {
-        return "BlockLocation{" +
-                "x=" + x +
-                ", y=" + y +
-                ", z=" + z +
-                ", world='" + world + '\'' +
-                '}';
+        return "BlockLocation{world='" + world + "', x=" + x + ", y=" + y + ", z=" + z + '}';
     }
 }

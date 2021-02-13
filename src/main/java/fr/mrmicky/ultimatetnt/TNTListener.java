@@ -48,6 +48,8 @@ import java.util.UUID;
 
 public class TNTListener implements Listener {
 
+    private static final Material CRYING_OBSIDIAN = Material.getMaterial("CRYING_OBSIDIAN");
+
     private final Set<UUID> throwCooldown = new HashSet<>();
 
     private final Map<UUID, BlockLocation> fallingBlocks = new HashMap<>();
@@ -215,7 +217,7 @@ public class TNTListener implements Listener {
                 for (int z = -radius; z <= radius; z++) {
                     Block relativeBlock = block.getRelative(x, y, z);
 
-                    if (relativeBlock.getType() != Material.OBSIDIAN) {
+                    if (!isObsidian(relativeBlock.getType())) {
                         continue;
                     }
 
@@ -296,7 +298,7 @@ public class TNTListener implements Listener {
                 restoreBlock(block, null);
             }
 
-            if (!realistic && block.getType() == Material.OBSIDIAN) {
+            if (!realistic && isObsidian(block.getType())) {
                 if (e.getYield() > 0) {
                     block.breakNaturally();
                 } else {
@@ -385,7 +387,11 @@ public class TNTListener implements Listener {
                 .count();
     }
 
-    private boolean isNotSafeBlock(Block b) {
-        return safeBlocks.stream().noneMatch(list -> list.contains(b));
+    private boolean isNotSafeBlock(Block block) {
+        return safeBlocks.stream().noneMatch(list -> list.contains(block));
+    }
+
+    private boolean isObsidian(Material material) {
+        return material == Material.OBSIDIAN || (CRYING_OBSIDIAN != null && material == CRYING_OBSIDIAN);
     }
 }

@@ -6,7 +6,7 @@
 
     <groupId>fr.mrmicky</groupId>
     <artifactId>ultimatetnt</artifactId>
-    <version>1.11.3</version>
+    <version>1.11.4</version>
 
     <name>UltimateTNT</name>
 
@@ -16,7 +16,7 @@
 
     <build>
         <defaultGoal>clean package</defaultGoal>
-        <finalName>${project.name}</finalName>
+        <finalName>${project.name}-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.14.2-R0.1-SNAPSHOT</version>
+            <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

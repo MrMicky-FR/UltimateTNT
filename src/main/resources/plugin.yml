@@ -1,11 +1,11 @@
 name: UltimateTNT
 version: ${project.version}
 author: MrMicky
-description: The utlimate TNT plugin !
+description: The utlimate TNT plugin
 website: https://www.spigotmc.org/resources/ultimatetnt.49388/
 api-version: 1.13
 main: fr.mrmicky.ultimatetnt.UltimateTNT
 commands:
   ultimatetnt:
-    description: Display informations about the plugin and reload the config
+    description: Display information about the plugin and reload the config
     aliases: [utnt]
