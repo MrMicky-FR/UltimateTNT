@@ -281,7 +281,7 @@ public class TNTListener implements Listener {
                         double y = Math.random();
                         double z = (Math.random() - Math.random()) / 1.5;
 
-                        //noinspection deprecation
+                        @SuppressWarnings("deprecation") // 1.8 compatibility
                         FallingBlock fall = block.getWorld().spawnFallingBlock(block.getLocation(), block.getType(), block.getData());
                         fall.setDropItem(false);
                         fall.setVelocity(new Vector(x, y, z));
