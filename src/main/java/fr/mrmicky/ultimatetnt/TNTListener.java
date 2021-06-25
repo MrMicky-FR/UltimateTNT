@@ -13,6 +13,7 @@ import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Explosive;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
@@ -192,7 +193,7 @@ public class TNTListener implements Listener {
 
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
-        if (e.getEntityType() != EntityType.PLAYER || e.getDamager().getType() != EntityType.PRIMED_TNT) {
+        if (e.getEntityType() != EntityType.PLAYER || !isTNT(e.getDamager())) {
             return;
         }
 
@@ -203,11 +204,13 @@ public class TNTListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityExplodeLow(EntityExplodeEvent e) {
-        if (e.getEntityType() != EntityType.PRIMED_TNT || !plugin.getConfig().getBoolean("ObsidianBreaker.Enable")) {
+        Entity entity = e.getEntity();
+
+        if (!isTNT(entity) || !plugin.getConfig().getBoolean("ObsidianBreaker.Enable")) {
             return;
         }
 
-        int radius = (int) ((TNTPrimed) e.getEntity()).getYield();
+        int radius = (int) (entity instanceof Explosive ? ((Explosive) entity).getYield() : 4);
         int amount = plugin.getConfig().getInt("ObsidianBreaker.Amount");
 
         Block block = e.getLocation().getBlock();
@@ -239,16 +242,17 @@ public class TNTListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent e) {
-        if (e.getEntityType() != EntityType.PRIMED_TNT && e.getEntityType() != EntityType.MINECART_TNT && !plugin.getConfig().getBoolean("AllExplosions")) {
+        Entity entity = e.getEntity();
+
+        if (!isTNT(entity) && !plugin.getConfig().getBoolean("AllExplosions")) {
             return;
         }
 
-        Entity entity = e.getEntity();
         if (!plugin.isWorldEnabled(entity.getWorld())) {
             return;
         }
 
-        Entity source = e.getEntityType() == EntityType.PRIMED_TNT ? ((TNTPrimed) entity).getSource() : null;
+        Entity source = entity instanceof TNTPrimed ? ((TNTPrimed) entity).getSource() : null;
 
         boolean noBreak = plugin.getConfig().getBoolean("DisableBreak");
         boolean realistic = plugin.getConfig().getBoolean("RealisticExplosion");
@@ -260,7 +264,7 @@ public class TNTListener implements Listener {
         int maxFallingBlocks = plugin.getConfig().getInt("MaxFallingBlocksPerChunk") - getFallingBlocksInChunk(e.getLocation().getChunk());
 
         if (plugin.getConfig().getBoolean("DisableDrops")) {
-            e.setYield(0.0F);
+            e.setYield(0);
         }
 
         Iterator<Block> blockIterator = e.blockList().iterator();
@@ -393,5 +397,9 @@ public class TNTListener implements Listener {
 
     private boolean isObsidian(Material material) {
         return material == Material.OBSIDIAN || (CRYING_OBSIDIAN != null && material == CRYING_OBSIDIAN);
+    }
+
+    private boolean isTNT(Entity entity) {
+        return entity.getType() == EntityType.PRIMED_TNT || entity.getType() == EntityType.MINECART_TNT;
     }
 }
