@@ -4,6 +4,7 @@ import fr.mrmicky.ultimatetnt.utils.BlockLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -17,6 +18,7 @@ import org.bukkit.entity.Explosive;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -265,7 +267,29 @@ public class TNTListener implements Listener {
         }
 
         Entity source = entity instanceof TNTPrimed ? ((TNTPrimed) entity).getSource() : null;
+        Location location = e.getLocation();
 
+        handleExplosion(e, source, location);
+    }
+
+
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onEntityExplode(BlockExplodeEvent e) {
+        if (!plugin.getConfig().getBoolean("AllExplosions")) {
+            return;
+        }
+
+        if (!plugin.isWorldEnabled(e.getBlock().getWorld())) {
+            return;
+        }
+
+        Location location = e.getBlock().getLocation();
+
+        handleExplosion(e, null, location);
+    }
+
+    private void handleExplosion(Event e, Entity source, Location location) {
         boolean noBreak = plugin.getConfig().getBoolean("DisableBreak");
         boolean realistic = plugin.getConfig().getBoolean("RealisticExplosion");
         boolean restore = plugin.getConfig().getBoolean("RestoreBlocks.Enable");
@@ -273,13 +297,24 @@ public class TNTListener implements Listener {
         List<String> blockBlacklist = plugin.getConfig().getStringList("BlacklistBlocks");
         List<String> blockWhitelist = plugin.getConfig().getStringList("Whitelist.BlockList");
         String name = plugin.getRandomTNTName();
-        int maxFallingBlocks = plugin.getConfig().getInt("MaxFallingBlocksPerChunk") - getFallingBlocksInChunk(e.getLocation().getChunk());
+        int maxFallingBlocks = plugin.getConfig().getInt("MaxFallingBlocksPerChunk") - getFallingBlocksInChunk(location.getChunk());
 
+        int yield = 1;
         if (plugin.getConfig().getBoolean("DisableDrops")) {
-            e.setYield(0);
+            if (e instanceof EntityExplodeEvent) {
+                ((EntityExplodeEvent) e).setYield(0);
+            } else {
+                ((BlockExplodeEvent) e).setYield(0);
+            }
+            yield = 0;
         }
 
-        Iterator<Block> blockIterator = e.blockList().iterator();
+        Iterator<Block> blockIterator;
+        if (e instanceof EntityExplodeEvent) {
+            blockIterator = ((EntityExplodeEvent) e).blockList().iterator();
+        } else {
+            blockIterator = ((BlockExplodeEvent) e).blockList().iterator();
+        }
         while (blockIterator.hasNext()) {
             Block block = blockIterator.next();
 
@@ -315,7 +350,7 @@ public class TNTListener implements Listener {
             }
 
             if (!realistic && isObsidian(block.getType())) {
-                if (e.getYield() > 0) {
+                if (yield > 0) {
                     block.breakNaturally();
                 } else {
                     block.setType(Material.AIR);
@@ -325,83 +360,12 @@ public class TNTListener implements Listener {
 
         if (realistic && restore) {
             // Blocks affected by the explosion should not be change
-            List<Block> blocks = new ArrayList<>(e.blockList());
-            safeBlocks.add(blocks);
-            Bukkit.getScheduler().runTaskLater(plugin, () ->
-                    safeBlocks.remove(blocks), plugin.getConfig().getInt("RestoreBlocks.MaxDelay") + 60);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onEntityExplode(BlockExplodeEvent e) {
-        if (!!plugin.getConfig().getBoolean("AllExplosions")) {
-            return;
-        }
-
-        if (!plugin.isWorldEnabled(e.getBlock().getWorld())) {
-            return;
-        }
-
-        boolean noBreak = plugin.getConfig().getBoolean("DisableBreak");
-        boolean realistic = plugin.getConfig().getBoolean("RealisticExplosion");
-        boolean restore = plugin.getConfig().getBoolean("RestoreBlocks.Enable");
-        boolean whitelist = plugin.getConfig().getBoolean("Whitelist.Enable");
-        List<String> blockBlacklist = plugin.getConfig().getStringList("BlacklistBlocks");
-        List<String> blockWhitelist = plugin.getConfig().getStringList("Whitelist.BlockList");
-        String name = plugin.getRandomTNTName();
-        int maxFallingBlocks = plugin.getConfig().getInt("MaxFallingBlocksPerChunk") - getFallingBlocksInChunk(e.getBlock().getLocation().getChunk());
-
-        if (plugin.getConfig().getBoolean("DisableDrops")) {
-            e.setYield(0);
-        }
-
-        Iterator<Block> blockIterator = e.blockList().iterator();
-        while (blockIterator.hasNext()) {
-            Block block = blockIterator.next();
-
-            if (block.getType() == Material.TNT) {
-                block.setType(Material.AIR);
-                plugin.spawnTNT(block.getLocation(), null, name);
-                blockIterator.remove();
-            } else if (noBreak || plugin.containsIgnoreCase(blockBlacklist, block.getType().toString())
-                    || (whitelist && !plugin.containsIgnoreCase(blockWhitelist, block.getType().toString()))) {
-                blockIterator.remove();
-            } else if (realistic) {
-                if (!blocks.containsValue(new BlockLocation(block)) && isNotSafeBlock(block)) {
-                    if (maxFallingBlocks > 0) {
-                        double x = (Math.random() - Math.random()) / 1.5;
-                        double y = Math.random();
-                        double z = (Math.random() - Math.random()) / 1.5;
-
-                        @SuppressWarnings("deprecation") // 1.8 compatibility
-                        FallingBlock fall = block.getWorld().spawnFallingBlock(block.getLocation(), block.getType(), block.getData());
-                        fall.setDropItem(false);
-                        fall.setVelocity(new Vector(x, y, z));
-                        maxFallingBlocks--;
-                        if (restore) {
-                            restoreBlock(block, fall);
-                        }
-                    } else if (restore) {
-                        restoreBlock(block, null);
-                    }
-                    block.setType(Material.AIR);
-                }
-            } else if (restore && block.getType() != Material.AIR) {
-                restoreBlock(block, null);
+            List<Block> blocks = new ArrayList<>();
+            if (e instanceof EntityExplodeEvent) {
+                blocks.addAll(((EntityExplodeEvent) e).blockList());
+            } else {
+            	blocks.addAll(((BlockExplodeEvent) e).blockList());
             }
-
-            if (!realistic && isObsidian(block.getType())) {
-                if (e.getYield() > 0) {
-                    block.breakNaturally();
-                } else {
-                    block.setType(Material.AIR);
-                }
-            }
-        }
-
-        if (realistic && restore) {
-            // Blocks affected by the explosion should not be change
-            List<Block> blocks = new ArrayList<>(e.blockList());
             safeBlocks.add(blocks);
             Bukkit.getScheduler().runTaskLater(plugin, () ->
                     safeBlocks.remove(blocks), plugin.getConfig().getInt("RestoreBlocks.MaxDelay") + 60);
