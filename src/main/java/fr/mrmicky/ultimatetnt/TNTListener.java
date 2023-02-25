@@ -184,27 +184,19 @@ public class TNTListener implements Listener {
     }
 
     @EventHandler
-    public void onEntityDamageByFall(EntityDamageEvent e) {
-        if (e.getEntityType() != EntityType.PLAYER || e.getCause() != DamageCause.FALL) {
+    public void onEntityDamage(EntityDamageEvent e) {
+        if (e.getEntityType() != EntityType.PLAYER
+                || !plugin.isWorldEnabled(e.getEntity().getWorld())) {
             return;
         }
 
-        if (plugin.isWorldEnabled(e.getEntity().getWorld())) {
+        if (e.getCause() == DamageCause.FALL) {
             e.setDamage(e.getDamage() / plugin.getConfig().getDouble("FallDamage"));
-        }
-    }
-
-    @EventHandler
-    public void onEntityDamageByExplosion(EntityDamageEvent e) {
-        if (e.getEntityType() != EntityType.PLAYER || e.getCause() != DamageCause.BLOCK_EXPLOSION) {
-            return;
-        }
-
-        if (plugin.isWorldEnabled(e.getEntity().getWorld())) {
+        } else if (e.getCause() == DamageCause.BLOCK_EXPLOSION) {
             e.setDamage(e.getDamage() / plugin.getConfig().getDouble("TNTDamage"));
         }
     }
-    
+
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
         if (e.getEntityType() != EntityType.PLAYER || !isTNT(e.getDamager())) {
@@ -267,15 +259,12 @@ public class TNTListener implements Listener {
         }
 
         Entity source = entity instanceof TNTPrimed ? ((TNTPrimed) entity).getSource() : null;
-        Location location = e.getLocation();
 
-        handleExplosion(e, source, location);
+        handleExplosion(e, source, e.getLocation(), e.getYield(), e.blockList());
     }
 
-
-
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onEntityExplode(BlockExplodeEvent e) {
+    public void onBlockExplode(BlockExplodeEvent e) {
         if (!plugin.getConfig().getBoolean("AllExplosions")) {
             return;
         }
@@ -286,10 +275,11 @@ public class TNTListener implements Listener {
 
         Location location = e.getBlock().getLocation();
 
-        handleExplosion(e, null, location);
+        handleExplosion(e, null, location, e.getYield(), e.blockList());
     }
 
-    private void handleExplosion(Event e, Entity source, Location location) {
+    private void handleExplosion(Event e, Entity source, Location location,
+                                 float yield, List<Block> blockList) {
         boolean noBreak = plugin.getConfig().getBoolean("DisableBreak");
         boolean realistic = plugin.getConfig().getBoolean("RealisticExplosion");
         boolean restore = plugin.getConfig().getBoolean("RestoreBlocks.Enable");
@@ -299,22 +289,17 @@ public class TNTListener implements Listener {
         String name = plugin.getRandomTNTName();
         int maxFallingBlocks = plugin.getConfig().getInt("MaxFallingBlocksPerChunk") - getFallingBlocksInChunk(location.getChunk());
 
-        int yield = 1;
         if (plugin.getConfig().getBoolean("DisableDrops")) {
+            yield = 0;
+
             if (e instanceof EntityExplodeEvent) {
                 ((EntityExplodeEvent) e).setYield(0);
             } else {
                 ((BlockExplodeEvent) e).setYield(0);
             }
-            yield = 0;
         }
 
-        Iterator<Block> blockIterator;
-        if (e instanceof EntityExplodeEvent) {
-            blockIterator = ((EntityExplodeEvent) e).blockList().iterator();
-        } else {
-            blockIterator = ((BlockExplodeEvent) e).blockList().iterator();
-        }
+        Iterator<Block> blockIterator = blockList.iterator();
         while (blockIterator.hasNext()) {
             Block block = blockIterator.next();
 
@@ -360,15 +345,9 @@ public class TNTListener implements Listener {
 
         if (realistic && restore) {
             // Blocks affected by the explosion should not be change
-            List<Block> blocks = new ArrayList<>();
-            if (e instanceof EntityExplodeEvent) {
-                blocks.addAll(((EntityExplodeEvent) e).blockList());
-            } else {
-            	blocks.addAll(((BlockExplodeEvent) e).blockList());
-            }
-            safeBlocks.add(blocks);
+            safeBlocks.add(blockList);
             Bukkit.getScheduler().runTaskLater(plugin, () ->
-                    safeBlocks.remove(blocks), plugin.getConfig().getInt("RestoreBlocks.MaxDelay") + 60);
+                    safeBlocks.remove(blockList), plugin.getConfig().getInt("RestoreBlocks.MaxDelay") + 60);
         }
     }
 
@@ -452,6 +431,8 @@ public class TNTListener implements Listener {
     }
 
     private boolean isTNT(Entity entity) {
-        return entity.getType() == EntityType.PRIMED_TNT || entity.getType() == EntityType.MINECART_TNT || entity.getType() == EntityType.ENDER_CRYSTAL;
+        return entity.getType() == EntityType.PRIMED_TNT
+                || entity.getType() == EntityType.MINECART_TNT
+                || entity.getType() == EntityType.ENDER_CRYSTAL;
     }
 }
